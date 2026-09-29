@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+<title>Cyber 30 Jours</title>
+<meta name="theme-color" content="#050507">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cyber30J">
+<meta name="description" content="Widget de suivi du parcours cybersécurité 30 jours : jour du jour, progression, théorie, commandes, défis et notes.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#050507; --card:#0d0d13; --line:#1e1e28; --line2:#26262f;
+  --txt:#f4f4f5; --mut:#9ca3af; --dim:#6b7280;
+  --em:#10b981; --em2:#34d399; --cyan:#06b6d4; --violet:#8b5cf6; --amber:#f59e0b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg); color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans',sans-serif;
+  min-height:100vh; -webkit-font-smoothing:antialiased; line-height:1.45;
+}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(600px 340px at 15% -5%, rgba(16,185,129,.14), transparent 65%),
+    radial-gradient(520px 320px at 90% 0%, rgba(6,182,212,.08), transparent 60%);
+}
+header{
+  position:sticky; top:0; z-index:10; padding:14px 16px 0;
+  background:rgba(5,5,7,.88); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;justify-content:space-between;align-items:center;font-size:16px;letter-spacing:.01em}
+.brand .l{display:flex;align-items:center;gap:8px;font-weight:700}
+.brand .l svg{flex-shrink:0;filter:drop-shadow(0 0 6px rgba(16,185,129,.55))}
+.brand .r{font-size:12px;color:var(--em2);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{height:7px;background:#14141b;border-radius:99px;margin:10px 0 12px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.bar.sm{height:4px;margin:7px 0}
+.fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--em),var(--cyan));box-shadow:0 0 10px rgba(16,185,129,.5);transition:width .4s ease}
+nav{display:flex;gap:7px;padding-bottom:12px}
+nav button{
+  flex:1;background:#0f0f16;border:1px solid var(--line2);color:var(--mut);
+  padding:9px 0;border-radius:11px;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .15s;
+}
+nav button.on{
+  background:rgba(16,185,129,.13);border-color:rgba(16,185,129,.45);color:var(--em2);
+  box-shadow:0 0 14px rgba(16,185,129,.15) inset;
+}
+main{position:relative;z-index:1;padding:16px 14px 34px;max-width:640px;margin:0 auto}
+.card{
+  background:linear-gradient(180deg,#0e0e15,#0b0b10);
+  border:1px solid var(--line);border-radius:18px;padding:18px 16px;margin-bottom:14px;
+  box-shadow:0 8px 28px rgba(0,0,0,.45);
+}
+.card.cur{border-color:rgba(16,185,129,.4);box-shadow:0 8px 28px rgba(0,0,0,.45),0 0 22px rgba(16,185,129,.08)}
+.dayhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;gap:8px}
+.badge{font-size:11px;font-weight:800;padding:4px 11px;border-radius:99px;letter-spacing:.03em;white-space:nowrap}
+.ok{color:var(--em2);font-weight:800;font-size:13px}
+h2{font-size:19px;line-height:1.3;margin-bottom:7px;letter-spacing:-.01em}
+h3{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin-bottom:9px;font-weight:700}
+.obj{color:#d4d4d8;font-size:14px;margin-bottom:13px}
+.done-btn{
+  width:100%;padding:12px;border-radius:13px;cursor:pointer;font-weight:800;font-size:14px;
+  border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.09);color:var(--em2);
+  transition:all .15s;
+}
+.done-btn.on{background:linear-gradient(90deg,var(--em),#059669);color:#03130d;border-color:transparent;box-shadow:0 4px 18px rgba(16,185,129,.3)}
+.done-btn:active{transform:scale(.985)}
+.sec{border-top:1px solid var(--line);padding:13px 0 3px;margin-top:11px}
+.sec ul{margin:8px 0 2px 18px;color:#d4d4d8;font-size:13.5px}
+.sec li{margin-bottom:4px}
+.sec p{color:#d4d4d8;font-size:13.5px}
+.link{color:var(--em2);font-weight:700;font-size:13.5px;text-decoration:none;display:inline-block;margin-bottom:5px}
+.link:active{opacity:.7}
+.code{position:relative;background:#07070b;border:1px solid var(--line);border-radius:11px;margin:9px 0;overflow:hidden}
+.code pre{
+  padding:13px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;color:#a7f3d0;white-space:pre-wrap;word-break:break-word;line-height:1.55;
+  max-height:340px;overflow:auto;
+}
+.copy{
+  position:sticky;float:right;top:6px;margin:6px 6px 0 0;background:#181822;color:var(--mut);
+  border:1px solid var(--line2);border-radius:8px;font-size:11px;padding:4px 10px;cursor:pointer;font-weight:600;
+}
+.copy.ok{color:var(--em2);border-color:rgba(16,185,129,.4)}
+.exo{margin-top:9px}
+.hints{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+.hint{background:#14141c;border:1px solid var(--line2);color:#a1a1aa;font-size:11px;padding:4px 10px;border-radius:99px}
+textarea{
+  width:100%;min-height:84px;background:#07070b;border:1px solid var(--line);border-radius:11px;
+  color:#e4e4e7;padding:11px;font-size:13.5px;font-family:inherit;resize:vertical;
+}
+textarea:focus,input:focus{outline:1px solid rgba(16,185,129,.5)}
+.navrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}
+.navrow span{font-weight:800;font-size:14px;color:var(--mut);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.navrow button{
+  background:#0f0f16;border:1px solid var(--line2);color:var(--txt);
+  width:46px;height:40px;border-radius:12px;font-size:15px;cursor:pointer;transition:all .15s;
+}
+.navrow button:active{background:#181820}
+.foot{color:var(--dim);font-size:12px;display:flex;flex-direction:column;gap:11px;padding:6px 2px 0;margin-top:14px;border-top:1px solid var(--line)}
+.foot label{color:var(--mut);display:flex;flex-direction:column;gap:5px;font-weight:600}
+.foot .inline{flex-direction:row;align-items:center;gap:8px;flex-wrap:wrap}
+.foot input[type=date],.foot input[type=time]{
+  background:#0d0d13;border:1px solid var(--line2);color:var(--txt);border-radius:10px;padding:8px 10px;font-size:14px;
+}
+.btnrow{display:flex;flex-wrap:wrap;gap:7px}
+.mini{
+  background:#101019;border:1px solid var(--line2);color:#c7c9cf;border-radius:10px;
+  padding:8px 13px;font-size:12px;cursor:pointer;font-weight:600;transition:all .15s;
+}
+.mini:active{background:#181822}
+.mini.acc{border-color:rgba(16,185,129,.4);color:var(--em2)}
+.mini.on{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.5);color:var(--em2)}
+.mini.danger{border-color:rgba(220,38,38,.4);color:#f87171}
+.mut{color:var(--mut);font-size:12.5px}
+.wk{margin-bottom:16px}
+.wkhead{font-weight:800;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wkhead .rng{color:var(--dim);font-weight:600;font-size:12px;font-variant-numeric:tabular-nums}
+.row{
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;
+  color:var(--txt);padding:8px 0;font-size:13.5px;border-bottom:1px solid #14141b;cursor:pointer;
+}
+.row:last-child{border-bottom:none}
+.row .num{
+  width:27px;height:27px;border:1.5px solid;border-radius:9px;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;color:inherit;font-variant-numeric:tabular-nums;
+}
+.row.did .rt{color:var(--dim);text-decoration:line-through}
+.row .rt{flex:1}
+.wkcard .bar{margin:10px 0 8px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<script>
+"use strict";
+const DATA=[{"id": 1, "week": 1, "title": "Jour 1 \u2014 Le Shell et la navigation", "objective": "\u00catre capable de naviguer dans Linux uniquement avec le terminal.", "theory": {"label": "Linux Journey - The Shell + pwd, ls, cd", "url": "https://labex.io/linuxjourney", "details": ["Module 'The Shell' : comprendre ce qu'est un shell, prompt, chemin absolu vs relatif", "Commandes pwd (o\u00f9 suis-je), ls -la (lister tout y compris cach\u00e9), cd (changer de dossier)", "Lire man ls pour comprendre les options"]}, "practice": {"intro": "Prends un terminal Ubuntu (VM ou WSL).", "commands": ["pwd", "ls -la", "cd ~", "cd /etc", "pwd", "cd -", "man ls", "history | tail -20"], "exercice": "Cr\u00e9e ton lab: mkdir -p ~/cyber-lab/{notes,outils,exercices} && cd ~/cyber-lab && pwd && ls -R"}, "defi": "Affiche le contenu de /etc/passwd sans interface graphique, puis reviens dans ~/cyber-lab uniquement avec cd.", "notesPrompt": ["Diff\u00e9rence chemin absolu / relatif ?", "Que fait ls -a ?", "Raccourci cd - et cd ~ ?"], "validation": "Tu sais o\u00f9 tu es et lister n'importe quel dossier en CLI."}, {"id": 2, "week": 1, "title": "Jour 2 \u2014 Cr\u00e9er, d\u00e9placer, supprimer", "objective": "Ma\u00eetriser la manipulation de fichiers/dossiers en ligne de commande.", "theory": {"label": "Linux Journey - touch, file, mkdir, cp, mv, rm, history", "url": "https://labex.io/linuxjourney", "details": ["touch cr\u00e9e un fichier vide, file identifie un type", "cp, mv, rm avec -r et -i pour s\u00e9curit\u00e9", "history + !n pour rejouer une commande"]}, "practice": {"intro": "Dans cyber-lab, manipule des fichiers comme en investigation.", "commands": ["touch notes/jour-1.txt notes/jour-2.txt", "echo \"jour 1\" > notes/jour-1.txt", "mkdir -p exercices/jour2", "cp notes/jour-1.txt exercices/jour2/", "mv exercices/jour2/jour-1.txt exercices/jour2/backup.txt", "rm -i exercices/jour2/backup.txt", "file notes/*", "history > notes/historique.txt"], "exercice": "Arborescence: cyber-lab/notes/jour-{1,2}.txt, cyber-lab/outils/, cyber-lab/exercices/. Utilise file et cat pour v\u00e9rifier."}, "defi": "Cr\u00e9e 5 fichiers, renomme-en 2, copie-en 1 dans un autre dossier, supprime-en 1 avec confirmation. Le tout en <10 commandes.", "notesPrompt": ["Danger de rm -rf ?", "Diff\u00e9rence cp et mv ?", "\u00c0 quoi sert file ?"], "validation": "Tu manipules fichiers sans GUI."}, {"id": 3, "week": 1, "title": "Jour 3 \u2014 Lire et comprendre des fichiers", "objective": "Lire rapidement n'importe quel fichier texte et en extraire l'essentiel.", "theory": {"label": "Linux Journey - Text-Fu: cat, less, head, tail", "url": "https://labex.io/linuxjourney", "details": ["cat pour petit fichier, less pour naviguer (q pour quitter)", "head -n 20, tail -n 20, tail -f pour logs", "less + /mot pour chercher"]}, "practice": {"intro": "Analyse de logs simul\u00e9s.", "commands": ["cat /etc/hosts", "head -n 20 /etc/passwd", "tail -n 20 /var/log/syslog 2>/dev/null || tail -n 20 /var/log/messages 2>/dev/null", "echo -e \"admin:123\\nuser:password\\nroot:toor\" > test.txt", "cat test.txt", "less test.txt"], "exercice": "Cr\u00e9e un fichier avec 100 lignes: seq 1 100 > big.txt puis affiche seulement lignes 40-60 avec head/tail combin\u00e9s."}, "defi": "Sans ouvrir d'\u00e9diteur graphique, affiche les 5 premi\u00e8res et 5 derni\u00e8res lignes de /etc/passwd.", "notesPrompt": ["Quand utiliser cat vs less ?", "Que fait tail -f ?", "Comment quitter less ?"], "validation": "Tu sais lire efficacement."}, {"id": 4, "week": 1, "title": "Jour 4 \u2014 Rechercher et filtrer", "objective": "Trouver une information cach\u00e9e parmi des milliers de fichiers.", "theory": {"label": "Linux Journey - Text-Fu suite: grep, find, wc, sort, uniq", "url": "https://labex.io/linuxjourney", "details": ["grep -i -r pour recherche insensible \u00e0 la casse r\u00e9cursive", "find . -name \"*.txt\" -type f", "wc -l, sort, uniq pour d\u00e9dupliquer"]}, "practice": {"intro": "Recherche d'indices comme en forensique.", "commands": ["grep -i \"password\" test.txt", "grep -R \"root\" ~/cyber-lab 2>/dev/null", "find ~/cyber-lab -name \"*.txt\"", "find /etc -type f -name \"*.conf\" 2>/dev/null | head", "wc -l /etc/passwd", "cat /etc/passwd | cut -d: -f1 | sort | uniq"], "exercice": "Dans ~/cyber-lab, cherche tous les .txt contenant 'jour': grep -R \"jour\" --include=\"*.txt\" ."}, "defi": "Trouve combien d'utilisateurs ont un shell /bin/bash dans /etc/passwd avec grep + wc -l.", "notesPrompt": ["Diff\u00e9rence grep et find ?", "Que fait 2>/dev/null ?", "Comment combiner grep et find ?"], "validation": "Tu sais fouiller un syst\u00e8me."}, {"id": 5, "week": 1, "title": "Jour 5 \u2014 Permissions et utilisateurs", "objective": "Comprendre et expliquer rwx, chmod 600/644/755 et le principe du moindre privil\u00e8ge.", "theory": {"label": "Linux Journey - Permissions + User Management", "url": "https://labex.io/linuxjourney", "details": ["ls -l : -rwxr-xr-- => user/group/other", "whoami, id, groups", "chmod 600 (rw-------) secret, 644 fichier public, 755 script/dossier", "chown user:group"]}, "practice": {"intro": "S\u00e9curise des fichiers sensibles.", "commands": ["whoami", "id", "ls -l ~/cyber-lab/notes/", "touch secret.txt && echo \"mdp=1234\" > secret.txt", "chmod 600 secret.txt", "ls -l secret.txt", "chmod 644 secret.txt", "chmod 755 ~/cyber-lab", "ls -ld ~/cyber-lab"], "exercice": "Cr\u00e9e un script: echo 'echo hacked' > test.sh; chmod 755 test.sh; ./test.sh puis passe-le en 644 et observe l'erreur."}, "defi": "Explique \u00e0 voix haute ce que fait chmod 600 et pourquoi c'est crucial pour une cl\u00e9 SSH priv\u00e9e.", "notesPrompt": ["Que signifie rwx ?", "600 vs 644 vs 755 ?", "Moindre privil\u00e8ge = ?"], "validation": "Tu sais lire et corriger des permissions."}, {"id": 6, "week": 1, "title": "Jour 6 \u2014 Processus, sudo et root", "objective": "G\u00e9rer les processus et comprendre les risques du compte root.", "theory": {"label": "Linux Journey - Processes + sudo", "url": "https://labex.io/linuxjourney", "details": ["ps aux, top / htop", "kill, kill -9 (dernier recours)", "sudo : ex\u00e9cuter en root temporaire, sudo -l pour voir tes droits", "Principe moindre privil\u00e8ge : jamais travailler en root permanent"]}, "practice": {"intro": "Surveillance syst\u00e8me comme un SOC.", "commands": ["ps aux | head -20", "ps aux | grep bash", "top -b -n1 | head -20", "sleep 100 &", "ps aux | grep sleep", "kill %1", "sudo ls -l /root 2>&1", "sudo -l"], "exercice": "Lance 2 sleep en arri\u00e8re-plan, liste-les, tue-les proprement, v\u00e9rifie qu'ils sont partis."}, "defi": "Trouve le PID du processus le plus gourmand avec top, puis explique pourquoi kill -9 peut corrompre des donn\u00e9es.", "notesPrompt": ["Diff\u00e9rence ps et top ?", "Pourquoi \u00e9viter root permanent ?", "kill vs kill -9 ?"], "validation": "Tu sais surveiller et stopper un processus."}, {"id": 7, "week": 1, "title": "Jour 7 \u2014 OverTheWire Bandit (niveaux 0-7)", "objective": "R\u00e9soudre des probl\u00e8mes Linux r\u00e9els en mode CTF d\u00e9butant.", "theory": {"label": "OverTheWire Bandit - Wargame", "url": "https://overthewire.org/wargames/bandit/", "details": ["Connexion: ssh bandit0@bandit.labs.overthewire.org -p 2220 mdp:bandit0", "Niveau 0: ls, cat readme", "Niveau 1-2: cat fichier avec tiret => cat ./- , fichiers avec espaces", "Niveau 3-7: ls -a (cach\u00e9), file, find, grep, sort, uniq, strings"]}, "practice": {"intro": "Joue les niveaux 0 \u00e0 7. Ne copie pas, comprends.", "commands": ["ssh bandit0@bandit.labs.overthewire.org -p 2220", "ls -la", "cat ./-", "cat \"spaces in this filename\"", "find . -type f -size 33c", "grep -r \"password\" . 2>/dev/null"], "exercice": "Pour chaque niveau, remplis ton template dans ~/cyber-lab/notes/bandit.md"}, "defi": "Termine Bandit 0-7 sans aide externe et r\u00e9dige ton template pour au moins 3 niveaux.", "notesPrompt": ["Template: Probl\u00e8me / Commande / Pourquoi \u00e7a marche / Ce que j'ai appris", "Quelle commande t'a le plus surpris ?", "Comment g\u00e9rer un fichier nomm\u00e9 '-' ?"], "validation": "Tu as r\u00e9solu 7 mini-\u00e9nigmes Linux en autonomie."}, {"id": 8, "week": 2, "title": "Jour 8 \u2014 Mod\u00e8le OSI et TCP/IP", "objective": "Expliquer \u00e0 quoi servent les 7 couches OSI et les 4 couches TCP/IP.", "theory": {"label": "Professor Messer - Network+ N10-008 - OSI Model", "url": "https://www.youtube.com/playlist?list=PLG49S3nxzAnnVhoAaL4B6aMFDQ8_gdxAy", "details": ["OSI 7 couches: Physique, Liaison, R\u00e9seau, Transport, Session, Pr\u00e9sentation, Application", "TCP/IP 4 couches: Acc\u00e8s r\u00e9seau, Internet, Transport, Application", "Mn\u00e9monique: 'Tous Les R\u00e9seaux Tr\u00e8s S\u00fbrs Parfois Apparaissent' (de bas en haut)", "Vid\u00e9o Messer: 'OSI Model' et 'TCP/IP Model' dans la playlist"]}, "practice": {"intro": "Cartographie mentale.", "commands": ["# Pas de commande, dessine le mod\u00e8le sur papier", "echo \"7:Application - HTTP,DNS\" > ~/cyber-lab/notes/osi.txt"], "exercice": "Tableau: | Couche | Exemple | Ton explication | puis: | 7 Application | HTTP, DNS, SSH | ... | 4 Transport | TCP, UDP | ... | 3 Internet | IP, ICMP | ... | 2 Acc\u00e8s | Ethernet, WiFi |"}, "defi": "Explique \u00e0 un ami en 2 minutes pourquoi on a besoin de couches.", "notesPrompt": ["OSI vs TCP/IP diff\u00e9rence ?", "O\u00f9 se situe le routeur ? Le switch ?", "Encapsulation = ?"], "validation": "Tu peux citer les 7 couches dans l'ordre."}, {"id": 9, "week": 2, "title": "Jour 9 \u2014 Encapsulation et trajet d'un paquet", "objective": "D\u00e9crire comment un message devient paquets, trames et bits.", "theory": {"label": "Professor Messer - Encapsulation / PDU", "url": "https://www.youtube.com/playlist?list=PLG49S3nxzAnnVhoAaL4B6aMFDQ8_gdxAy", "details": ["Encapsulation: Donn\u00e9e -> Segment (TCP) -> Paquet (IP) -> Trame (Ethernet) -> Bits", "PDU: Data, Segment, Packet, Frame, Bits", "D\u00e9sencapsulation \u00e0 l'arriv\u00e9e"]}, "practice": {"intro": "Visualise avec un curl.", "commands": ["curl -v https://example.com 2>&1 | head -20", "ping -c 4 8.8.8.8"], "exercice": "\u00c9cris le trajet: 'Je tape example.com -> DNS -> TCP handshake -> HTTP GET -> encapsulation -> ...' en 8 \u00e9tapes."}, "defi": "Dessine l'encapsulation d'une requ\u00eate HTTP: o\u00f9 est ajout\u00e9 le port ? L'IP ? L'adresse MAC ?", "notesPrompt": ["Paquet vs Trame vs Segment ?", "O\u00f9 se fait l'encapsulation ?", "LAN vs Internet ?"], "validation": "Tu sais expliquer le trajet d'une requ\u00eate web en couches."}, {"id": 10, "week": 2, "title": "Jour 10 \u2014 Adressage IPv4, MAC, masque", "objective": "Lire une adresse IP, un masque et une adresse MAC et comprendre leur r\u00f4le.", "theory": {"label": "Professor Messer - IPv4, Subnetting, MAC", "url": "https://www.youtube.com/playlist?list=PLG49S3nxzAnnVhoAaL4B6aMFDQ8_gdxAy", "details": ["IPv4: 32 bits, ex 192.168.1.10", "Masque /24 = 255.255.255.0 => 254 h\u00f4tes", "MAC: adresse physique de carte r\u00e9seau, ex aa:bb:cc:dd:ee:ff", "Passerelle = routeur qui sort du LAN"]}, "practice": {"intro": "Observe ton propre r\u00e9seau.", "commands": ["ip addr", "ip route", "ip neigh", "hostname -I"], "exercice": "Note: Ton IP priv\u00e9e, ta passerelle (default via...), ton masque. Est-ce du /24 ?"}, "defi": "Explique pourquoi 192.168.1.1 et 192.168.1.2 peuvent communiquer sans routeur mais pas 192.168.1.1 et 10.0.0.1.", "notesPrompt": ["IP priv\u00e9e vs publique ?", "Masque /24 = combien d'h\u00f4tes ?", "MAC = couche 2 ou 3 ?"], "validation": "Tu identifies IP, MAC, masque, passerelle sur ta machine."}, {"id": 11, "week": 2, "title": "Jour 11 \u2014 DNS, DHCP, IPv6, public/priv\u00e9", "objective": "Comprendre comment on obtient une IP et comment on r\u00e9sout un nom.", "theory": {"label": "Professor Messer - DNS, DHCP, IPv6", "url": "https://www.youtube.com/playlist?list=PLG49S3nxzAnnVhoAaL4B6aMFDQ8_gdxAy", "details": ["DHCP: donne IP automatiquement", "DNS: traduit nom -> IP", "IPv4 public = sur Internet, priv\u00e9 = 192.168.x.x, 10.x.x.x, 172.16.x.x", "IPv6: 128 bits, ex 2001:db8::1, remplace IPv4"]}, "practice": {"intro": "Interroge le DNS comme un analyste.", "commands": ["nslookup example.com", "dig example.com +short", "dig google.com", "cat /etc/resolv.conf", "ip route | grep default"], "exercice": "Compare nslookup et dig pour le m\u00eame domaine. Quelle est ton adresse DNS ?"}, "defi": "Explique la cha\u00eene: 'Mon PC -> DHCP -> DNS -> Internet' en 4 phrases.", "notesPrompt": ["DHCP = quel port ?", "DNS = port 53 TCP/UDP ?", "Pourquoi IPv6 ?"], "validation": "Tu sais expliquer DNS et DHCP simplement."}, {"id": 12, "week": 2, "title": "Jour 12 \u2014 Protocoles essentiels (HTTP, DNS, SSH...)", "objective": "Conna\u00eetre le r\u00f4le et le port par d\u00e9faut des protocoles cl\u00e9s.", "theory": {"label": "Professor Messer - Ports & Protocoles", "url": "https://www.youtube.com/playlist?list=PLG49S3nxzAnnVhoAaL4B6aMFDQ8_gdxAy", "details": ["HTTP 80, HTTPS 443, DNS 53, SSH 22, FTP 21, SMTP 25, DHCP 67/68", "TCP = fiable avec handshake, UDP = rapide sans connexion", "ICMP = ping, diagnostic"]}, "practice": {"intro": "Associe protocole et usage.", "commands": ["cat /etc/services | grep -E \"^http|^ssh|^dns|^ftp\" | head -20", "ss -tuln | head -30"], "exercice": "Cr\u00e9e tableau: | Protocole | Port | TCP/UDP | Usage | dans notes/reseau.txt"}, "defi": "Sans regarder, cite 6 protocoles et leur port. V\u00e9rifie avec /etc/services.", "notesPrompt": ["HTTP vs HTTPS diff\u00e9rence ?", "TCP vs UDP cas d'usage ?", "ICMP = danger ?"], "validation": "Tu connais les ports principaux."}, {"id": 13, "week": 2, "title": "Jour 13 \u2014 Que se passe-t-il quand on visite un site ?", "objective": "Raconter en 8 \u00e9tapes compl\u00e8tes le chargement d'une page web.", "theory": {"label": "Professor Messer - How Web Works + TCP Handshake", "url": "https://www.youtube.com/playlist?list=PLG49S3nxzAnnVhoAaL4B6aMFDQ8_gdxAy", "details": ["1. Saisie URL", "2. R\u00e9solution DNS", "3. TCP 3-way handshake (SYN, SYN-ACK, ACK)", "4. TLS handshake pour HTTPS", "5. Requ\u00eate HTTP GET", "6. R\u00e9ponse serveur 200 + HTML", "7. Navigateur parse et charge ressources", "8. Fermeture TCP"]}, "practice": {"intro": "Observe en direct.", "commands": ["curl -I https://example.com", "curl -v https://example.com 2>&1 | grep -E \"Connected|TLS|GET|HTTP\"", "ping -c 2 example.com"], "exercice": "\u00c9cris le sc\u00e9nario complet dans notes/web-journey.txt avec chaque couche OSI travers\u00e9e."}, "defi": "R\u00e9ponds: Pourquoi HTTPS est pr\u00e9f\u00e9rable ? \u00c0 quoi sert SSH ? Diff\u00e9rence TCP/UDP avec exemple concret.", "notesPrompt": ["3-way handshake ?", "TLS = quoi ?", "Pourquoi curl -I utile ?"], "validation": "Tu racontes le trajet d'une requ\u00eate web de A \u00e0 Z."}, {"id": 14, "week": 2, "title": "Jour 14 \u2014 Observer ton r\u00e9seau (lab autoris\u00e9)", "objective": "Utiliser ping, traceroute, curl et Wireshark de fa\u00e7on \u00e9thique.", "theory": {"label": "Observation r\u00e9seau - Outils diagnostic", "url": "https://www.youtube.com/playlist?list=PLG49S3nxzAnnVhoAaL4B6aMFDQ8_gdxAy", "details": ["ping = ICMP, teste joignabilit\u00e9", "traceroute (Linux) / tracert (Windows) = chemin des routeurs", "curl -I = en-t\u00eates HTTP", "Wireshark uniquement sur ton r\u00e9seau / VM, jamais sur r\u00e9seau public sans autorisation"]}, "practice": {"intro": "Diagnostic local uniquement.", "commands": ["ping -c 5 1.1.1.1", "traceroute 1.1.1.1 2>/dev/null || tracepath 1.1.1.1", "curl -I https://example.com", "curl -I https://google.com", "ss -tuln"], "exercice": "Fais 3 ping vers 3 cibles, 1 traceroute, 2 curl -I. Note latence et TTL. Si tu as Wireshark: capture filtre 'http' sur loopback en visitant example.com (autoris\u00e9)."}, "defi": "Explique la diff\u00e9rence entre ping qui r\u00e9ussit et curl qui \u00e9choue: que cela indique ?", "notesPrompt": ["TTL = ?", "traceroute montre quoi ?", "Wireshark \u00e9thique = ?"], "validation": "Tu sais diagnostiquer un r\u00e9seau avec 4 outils de base."}, {"id": 15, "week": 3, "title": "Jour 15 \u2014 Triade CIA et Intro Cyber", "objective": "Expliquer Confidentialit\u00e9, Int\u00e9grit\u00e9, Disponibilit\u00e9 avec exemples r\u00e9els.", "theory": {"label": "TryHackMe Pre-Security - Intro to Cyber Security", "url": "https://tryhackme.com/path/outline/presecurity", "details": ["Room: Introduction to Cyber Security", "Confidentialit\u00e9: seuls autoris\u00e9s acc\u00e8dent", "Int\u00e9grit\u00e9: donn\u00e9es non modifi\u00e9es ill\u00e9galement", "Disponibilit\u00e9: syst\u00e8mes accessibles quand besoin"]}, "practice": {"intro": "Classe des incidents.", "commands": ["# Exercice papier", "echo \"Incident: fuite client | Principe: Confidentialit\u00e9\" >> ~/cyber-lab/notes/cia.txt"], "exercice": "Tableau: | Incident | Principe touch\u00e9 | Exemple: Fuite donn\u00e9es = Confidentialit\u00e9, Modification fichier = Int\u00e9grit\u00e9, DDoS = Disponibilit\u00e9. Trouve 3 exemples de chaque."}, "defi": "Donne 1 exemple r\u00e9el pour chaque lettre CIA (actualit\u00e9 ou perso) en 1 phrase.", "notesPrompt": ["CIA = ?", "Exemple fuite vs modification ?", "Pourquoi les 3 sont li\u00e9s ?"], "validation": "Tu expliques CIA \u00e0 un non-technique."}, {"id": 16, "week": 3, "title": "Jour 16 \u2014 CIA en pratique", "objective": "Analyser un incident et dire quel pilier CIA est impact\u00e9.", "theory": {"label": "TryHackMe Pre-Security - CIA suite", "url": "https://tryhackme.com/path/outline/presecurity", "details": ["Exercice: Un ransomware chiffre les fichiers => Disponibilit\u00e9 + Int\u00e9grit\u00e9", "Vol de base de donn\u00e9es => Confidentialit\u00e9", "Modification de logs => Int\u00e9grit\u00e9"]}, "practice": {"intro": "Analyse de cas.", "commands": ["# R\u00e9dige dans notes/cia-cas.txt 5 sc\u00e9narios"], "exercice": "Invente 5 incidents et classe-les: ex 'Un stagiaire supprime prod' = Disponibilit\u00e9"}, "defi": "Un attaquant lit des mails RH mais ne modifie rien: quel pilier ? Pourquoi c'est grave m\u00eame sans modification ?", "notesPrompt": ["Un incident peut toucher plusieurs piliers ?", "Priorit\u00e9 CIA selon entreprise ?", "Lien avec RGPD ?"], "validation": "Tu sais prioriser selon CIA."}, {"id": 17, "week": 3, "title": "Jour 17 \u2014 Actif, Menace, Vuln\u00e9rabilit\u00e9, Risque, Exploit", "objective": "Distinguer les 5 concepts fondamentaux du risque.", "theory": {"label": "TryHackMe Pre-Security - Introductory Research + Threats", "url": "https://tryhackme.com/path/outline/presecurity", "details": ["Actif: ce qui a de la valeur (donn\u00e9es, serveur)", "Menace: ce qui peut nuire (hacker, panne)", "Vuln\u00e9rabilit\u00e9: faiblesse (mdp faible)", "Risque = Probabilit\u00e9 x Impact", "Exploit: code/m\u00e9thode qui utilise la vuln\u00e9rabilit\u00e9"]}, "practice": {"intro": "Mod\u00e9lise un risque.", "commands": ["echo \"Actif: base clients\\nMenace: phishing\\nVuln\u00e9: pas de MFA\\nRisque: \u00e9lev\u00e9\\nExploit: lien malveillant\" > ~/cyber-lab/notes/risque.txt"], "exercice": "Prends ton PC comme actif, liste 3 menaces, 3 vuln\u00e9rabilit\u00e9s, \u00e9value 1 risque."}, "defi": "Explique avec tes mots: 'Une vuln\u00e9rabilit\u00e9 sans menace = pas de risque ?' Vrai/Faux et pourquoi.", "notesPrompt": ["Formule risque ?", "Exploit vs vuln\u00e9rabilit\u00e9 ?", "Actif = toujours technique ?"], "validation": "Tu distingues menace/vuln\u00e9/risque/exploit."}, {"id": 18, "week": 3, "title": "Jour 18 \u2014 Phishing, Malware, Ransomware, Brute Force", "objective": "Reconna\u00eetre les attaques les plus courantes et leur vecteur.", "theory": {"label": "TryHackMe Pre-Security - Types d'attaques", "url": "https://tryhackme.com/path/outline/presecurity", "details": ["Phishing: mail qui vole identifiants", "Malware: logiciel malveillant", "Ransomware: chiffre et demande ran\u00e7on", "Brute force: teste tous les mdp", "Mauvaise config, vol d'identifiants, ing\u00e9nierie sociale"]}, "practice": {"intro": "Room Introductory Research sur THM: apprends \u00e0 faire une recherche OSINT \u00e9thique.", "commands": ["# Sur THM, fais la room Research", "echo \"Phishing: v\u00e9rifier URL, exp\u00e9diteur, faute\" >> notes/menaces.txt"], "exercice": "Pour chaque attaque, note: vecteur, impact CIA, contre-mesure simple."}, "defi": "Analyse un mail de phishing exemple (dans THM) : liste 3 indices qui le trahissent.", "notesPrompt": ["Phishing vs spear phishing ?", "Ransomware = quel pilier CIA ?", "Brute force vs dictionnaire ?"], "validation": "Tu identifies 5 types d'attaques et comment s'en prot\u00e9ger."}, {"id": 19, "week": 3, "title": "Jour 19 \u2014 Authentification vs Autorisation", "objective": "Expliquer la diff\u00e9rence cruciale entre Qui es-tu ? et Que peux-tu faire ?", "theory": {"label": "TryHackMe Pre-Security - Authentication", "url": "https://tryhackme.com/path/outline/presecurity", "details": ["Authentification = prouver identit\u00e9 (mdp, MFA, biom\u00e9trie)", "Autorisation = droits apr\u00e8s authent (r\u00f4le admin/user)", "Comptes, r\u00f4les, sessions", "Principe: jamais confondre les deux"]}, "practice": {"intro": "Teste sur Linux.", "commands": ["whoami", "id", "sudo -l", "ls -l /etc/shadow 2>&1", "cat /etc/passwd | grep -E \"root|$(whoami)\""], "exercice": "\u00c9cris: 'Auth = login Linux, Autorisation = sudo -l montre que je peux / ne peux pas faire X'"}, "defi": "Un utilisateur authentifi\u00e9 peut acc\u00e9der au dossier /admin qu'il ne devrait pas voir: faille d'auth ou d'autorisation ?", "notesPrompt": ["Auth = Qui ? Autor = Quoi ?", "Exemple faille autorisation ?", "Session = ?"], "validation": "Tu ne confonds plus auth et autorisation."}, {"id": 20, "week": 3, "title": "Jour 20 \u2014 MFA, moindre privil\u00e8ge, s\u00e9paration", "objective": "Comprendre pourquoi un mot de passe seul ne suffit jamais.", "theory": {"label": "TryHackMe Pre-Security - Access Control", "url": "https://tryhackme.com/path/outline/presecurity", "details": ["MFA: 2 facteurs parmi: ce que tu sais (mdp), ce que tu as (tel), ce que tu es (empreinte)", "Moindre privil\u00e8ge: donner le minimum n\u00e9cessaire", "S\u00e9paration responsabilit\u00e9s: 2 personnes pour action critique"]}, "practice": {"intro": "Audit de tes propres mots de passe.", "commands": ["# V\u00e9rifie si tu r\u00e9utilises un mdp (sans l'\u00e9crire)", "echo \"MFA prot\u00e8ge m\u00eame si mdp fuite\" > notes/auth.txt"], "exercice": "Liste 3 services o\u00f9 tu as activ\u00e9 MFA et 2 o\u00f9 tu devrais. Explique le risque mdp faible/r\u00e9utilis\u00e9."}, "defi": "Pourquoi '123456' est faible m\u00eame avec MFA ? Et pourquoi MFA n'est pas invincible (SIM swap, phishing) ?", "notesPrompt": ["3 types de facteurs MFA ?", "Moindre privil\u00e8ge exemple Linux ?", "S\u00e9paration = anti-fraude ?"], "validation": "Tu expliques MFA et moindre privil\u00e8ge avec exemples."}, {"id": 21, "week": 3, "title": "Jour 21 \u2014 Cryptographie de base", "objective": "Diff\u00e9rencier chiffrement, hachage et encodage, et manipuler un hash.", "theory": {"label": "TryHackMe Pre-Security - Hashing & Crypto", "url": "https://tryhackme.com/path/outline/presecurity", "details": ["Chiffrement sym\u00e9trique (1 cl\u00e9, AES), asym\u00e9trique (2 cl\u00e9s, RSA)", "Hachage: irr\u00e9versible, ex SHA256, v\u00e9rifie int\u00e9grit\u00e9", "Sel = random ajout\u00e9 au mdp avant hash", "TLS = chiffrement + certificats", "Base64 = encodage, pas s\u00e9curit\u00e9"]}, "practice": {"intro": "Manipule un hash.", "commands": ["echo \"bonjour\" > fichier.txt", "sha256sum fichier.txt", "echo \"bonjour!\" > fichier.txt", "sha256sum fichier.txt", "echo -n \"password\" | sha256sum", "echo -n \"password\" | base64", "echo \"cGFzc3dvcmQ=\" | base64 -d"], "exercice": "Montre que modifier 1 caract\u00e8re change totalement le hash. Explique pourquoi Base64 n'est pas du chiffrement."}, "defi": "Un site stocke les mdp en Base64: est-ce s\u00e9curis\u00e9 ? Pourquoi hash + sel est mieux ?", "notesPrompt": ["Sym\u00e9trique vs asym\u00e9trique ?", "Hash r\u00e9versible ?", "Sel = ?", "Base64 = chiffrement ? Non."], "validation": "Tu diff\u00e9rencies chiffrement/hash/encodage et sais hasher."}, {"id": 22, "week": 4, "title": "Jour 22 \u2014 M\u00e9thodologie d'analyse (Observer \u00e0 Corriger)", "objective": "Appliquer une d\u00e9marche structur\u00e9e au lieu de lancer des commandes au hasard.", "theory": {"label": "TryHackMe - Complete Beginner - Beginner Path Intro", "url": "https://tryhackme.com/room/beginnerpathintro", "details": ["1 Observer, 2 Recueillir infos, 3 Identifier services, 4 Chercher faiblesses, 5 Tester en autoris\u00e9, 6 Documenter, 7 Proposer correction", "Room THM: Beginner Path Intro - lis la m\u00e9thodologie"]}, "practice": {"intro": "Cr\u00e9e ton template d'analyse.", "commands": ["mkdir -p ~/cyber-lab/rapports", "cat > ~/cyber-lab/rapports/template.md << 'EOF'\n# Rapport\n- Nom labo:\n- Objectif:\n- Infos d\u00e9couvertes:\n- M\u00e9thode:\n- Vuln\u00e9rabilit\u00e9:\n- Impact:\n- Correction:\n- Appris:\nEOF\ncat ~/cyber-lab/rapports/template.md"], "exercice": "Applique le template \u00e0 un exemple fictif: 'Serveur avec port 22 ouvert'."}, "defi": "Pourquoi documenter est aussi important que trouver la faille ?", "notesPrompt": ["7 \u00e9tapes dans l'ordre ?", "Pourquoi tester uniquement autoris\u00e9 ?", "Correction = qui fait ?"], "validation": "Tu as un template et une m\u00e9thode claire."}, {"id": 23, "week": 4, "title": "Jour 23 \u2014 M\u00e9thodologie en action dans THM", "objective": "Suivre la m\u00e9thode sur une machine d\u00e9butant de TryHackMe.", "theory": {"label": "TryHackMe - Complete Beginner Path - Intro rooms", "url": "https://tryhackme.com/path/outline/beginner", "details": ["Continue le path Beginner: lis chaque t\u00e2che, ne saute pas", "Focus sur comment l'auteur passe de l'observation \u00e0 l'exploitation", "Prends notes de chaque outil introduit"]}, "practice": {"intro": "Fais 1-2 rooms du path Complete Beginner (niveau intro).", "commands": ["# Sur THM: lance une room, note IP cible", "echo \"M\u00e9thode appliqu\u00e9e aujourd'hui\" >> ~/cyber-lab/rapports/methodo.txt"], "exercice": "Pour la room du jour, remplis ton template complet."}, "defi": "Quelle \u00e9tape as-tu tendance \u00e0 sauter ? Pourquoi c'est risqu\u00e9 ?", "notesPrompt": ["Quelle room faite ?", "Outil d\u00e9couvert ?", "Difficult\u00e9 rencontr\u00e9e ?"], "validation": "Tu appliques la m\u00e9thode sur un vrai lab."}, {"id": 24, "week": 4, "title": "Jour 24 \u2014 Reconnaissance passive/active", "objective": "Distinguer reconnaissance passive (sans toucher la cible) et active (interaction).", "theory": {"label": "TryHackMe - What is Networking + Recon", "url": "https://tryhackme.com/room/whatisnetworking", "details": ["Passive: whois, nslookup, dig, curl, recherche Google, pas de bruit", "Active: ping, nmap (dans lab autoris\u00e9 uniquement)", "Room What is Networking: revois OSI, ports, IP"]}, "practice": {"intro": "Recon passive sur domaine public autoris\u00e9 (example.com).", "commands": ["nslookup example.com", "dig example.com ANY +noall +answer", "curl -I https://example.com", "whois example.com | head -40"], "exercice": "Pour example.com, note: IP, serveurs DNS, en-t\u00eates HTTP (Server, etc.). C'est passif."}, "defi": "Pourquoi commencer toujours par du passif avant l'actif ? (OPSEC, discr\u00e9tion, l\u00e9gal)", "notesPrompt": ["Passif vs actif exemple ?", "Recon = quelle \u00e9tape m\u00e9thodo ?", "whois = ?"], "validation": "Tu sais faire une recon passive propre."}, {"id": 25, "week": 4, "title": "Jour 25 \u2014 Ports, banni\u00e8res, nmap (lab autoris\u00e9)", "objective": "D\u00e9couvrir les services d'une machine avec nmap en environnement autoris\u00e9 uniquement.", "theory": {"label": "TryHackMe - Nmap & Services", "url": "https://tryhackme.com/room/whatisnetworking", "details": ["Port ouvert = service qui \u00e9coute", "Banni\u00e8re = version du service (ex Apache 2.4.41)", "nmap -sV = d\u00e9tecte version, -sC = scripts par d\u00e9faut", "JAMAIS sur IP publique sans autorisation: uniquement THM / VM perso"]}, "practice": {"intro": "Sur ta VM ou IP THM fournie.", "commands": ["nmap -sV -sC 127.0.0.1", "nmap -p 22,80,443 --open 127.0.0.1", "ss -tuln", "curl -I http://127.0.0.1:80 2>&1 || echo \"pas de web local\""], "exercice": "Sur la cible THM: nmap -sV IP, note ports ouverts, services, versions. Puis curl pour banni\u00e8re HTTP."}, "defi": "Port 22 ouvert + banni\u00e8re OpenSSH 7.2: qu'est-ce que cela t'apprend ? Quelle prochaine \u00e9tape \u00e9thique ?", "notesPrompt": ["-sV fait quoi ?", "Banni\u00e8re = pourquoi utile ?", "R\u00e8gle \u00e9thique nmap ?"], "validation": "Tu sais scanner en lab autoris\u00e9 et lire les r\u00e9sultats."}, {"id": 26, "week": 4, "title": "Jour 26 \u2014 Vuln\u00e9rabilit\u00e9s web: validation & contr\u00f4les", "objective": "Identifier une mauvaise validation d'entr\u00e9e et un contr\u00f4le d'acc\u00e8s insuffisant.", "theory": {"label": "PortSwigger Web Security Academy + OWASP Juice Shop", "url": "https://portswigger.net/web-security", "details": ["Vuln\u00e9rabilit\u00e9s: mauvaise validation entr\u00e9es, contr\u00f4le acc\u00e8s insuffisant, auth faible, divulgation infos", "Lab PortSwigger gratuit: commence par 'Access Control' et 'Information Disclosure'", "OWASP Juice Shop: boutique vuln\u00e9rable pour s'entra\u00eener localement"]}, "practice": {"intro": "Lab PortSwigger Academy (gratuit) - cr\u00e9e un compte.", "commands": ["# Va sur portswigger.net/web-security", "# Fais le lab: Unprotected admin functionality", "echo \"Vuln: /admin sans contr\u00f4le => IDOR\" >> notes/web.txt"], "exercice": "Dans Juice Shop ou PortSwigger, trouve une page admin accessible sans \u00eatre admin. Documente URL, m\u00e9thode, impact."}, "defi": "Diff\u00e9rence entre authentification faible et autorisation manquante ? Donne 1 exemple de chaque.", "notesPrompt": ["OWASP Top 10 = ?", "Contr\u00f4le acc\u00e8s = ?", "Divulgation = exemple ?"], "validation": "Tu as trouv\u00e9 une faille de contr\u00f4le d'acc\u00e8s en lab."}, {"id": 27, "week": 4, "title": "Jour 27 \u2014 Injection et XSS en lab contr\u00f4l\u00e9", "objective": "Comprendre injection et Cross-Site Scripting sans attaquer de site r\u00e9el.", "theory": {"label": "PortSwigger - SQLi & XSS + Juice Shop", "url": "https://owasp.org/www-project-juice-shop/", "details": ["Injection: ins\u00e9rer code dans champ (SQL: ' OR '1'='1)", "XSS: injecter JavaScript qui s'ex\u00e9cute chez victime, lab uniquement", "PortSwigger labs: SQL injection, Reflected XSS - tous gratuits et autoris\u00e9s", "Juice Shop: installer via docker: docker run --rm -p 3000:3000 bkimminich/juice-shop"]}, "practice": {"intro": "Lab XSS ou SQLi d\u00e9butant sur PortSwigger.", "commands": ["# Lab PortSwigger: Reflected XSS into HTML context", "# Payload test lab uniquement: <script>alert(1)<\/script>", "# Juice Shop local: http://localhost:3000 - cherche le score board"], "exercice": "Sur PortSwigger, exploite un XSS r\u00e9fl\u00e9chi en lab, puis explique la correction (\u00e9chapper sortie, CSP)."}, "defi": "Pourquoi une injection SQL est critique (CIA) ? Quel impact ?", "notesPrompt": ["SQLi = ?", "XSS r\u00e9fl\u00e9chi vs stock\u00e9 ?", "Correction XSS = ?"], "validation": "Tu expliques injection/XSS et leur correction de base."}, {"id": 28, "week": 4, "title": "Jour 28 \u2014 Sc\u00e9nario pratique 1: analyse de services", "objective": "Mener de A \u00e0 Z une analyse de services sur une machine THM d\u00e9butant.", "theory": {"label": "TryHackMe Complete Beginner - Pratique", "url": "https://tryhackme.com/path/outline/beginner", "details": ["Choisis une room facile: ex 'Basic Pentesting' ou 'Simple CTF' dans le path", "Suis template: Observer -> Recueillir -> Identifier -> Faiblesses -> Tester autoris\u00e9"]}, "practice": {"intro": "Applique tout.", "commands": ["# THM room: note IP", "nmap -sV -sC IP", "curl -I http://IP", "gobuster ou dirb si vu en THM (sinon curl pour pages)", "cat ~/cyber-lab/rapports/template.md"], "exercice": "R\u00e9dige rapport complet: Nom labo / Objectif / Infos d\u00e9couvertes / M\u00e9thode / Vuln\u00e9rabilit\u00e9 / Impact / Correction / Appris"}, "defi": "Dans ton rapport, quelle correction proposerais-tu au propri\u00e9taire du service vuln\u00e9rable ?", "notesPrompt": ["Quel service vuln\u00e9rable ?", "M\u00e9thode qui a march\u00e9 ?", "Impact r\u00e9el si prod ?"], "validation": "Tu as un premier rapport structur\u00e9."}, {"id": 29, "week": 4, "title": "Jour 29 \u2014 Sc\u00e9nario pratique 2: logs et mauvaises configs", "objective": "Lire des logs, rep\u00e9rer une mauvaise configuration et proposer une rem\u00e9diation.", "theory": {"label": "TryHackMe - Logs & Configs", "url": "https://tryhackme.com/path/outline/beginner", "details": ["Logs Linux: /var/log/auth.log, syslog", "Mauvaise config: permissions 777, mdp par d\u00e9faut, service expos\u00e9 sans besoin", "Lecture de logs = comp\u00e9tence SOC de base"]}, "practice": {"intro": "Analyse de logs sur ta VM ou room THM.", "commands": ["cat /var/log/auth.log 2>/dev/null | tail -50 || journalctl -n 50", "grep -i \"failed\" /var/log/auth.log 2>/dev/null | tail -20", "ls -la /etc/ | grep -E \"shadow|passwd\"", "find /var/www -type f -perm -002 2>/dev/null | head"], "exercice": "Trouve dans les logs une tentative de connexion \u00e9chou\u00e9e, note IP, heure, user. Propose correction (fail2ban, MFA, etc.)."}, "defi": "Un fichier en 777 dans /var/www: quel risque ? Quelle permission recommander ?", "notesPrompt": ["Log int\u00e9ressant trouv\u00e9 ?", "Mauvaise config vue ?", "Rem\u00e9diation = ?"], "validation": "Tu sais lire des logs et rep\u00e9rer une mauvaise config."}, {"id": 30, "week": 4, "title": "Jour 30 \u2014 Bilan, rapport et sp\u00e9cialisation", "objective": "Faire le point et choisir ta voie pour les 30 prochains jours.", "theory": {"label": "Bilan final + Choix sp\u00e9cialisation", "url": "https://tryhackme.com/path/outline/beginner", "details": ["Sp\u00e9cialisations: Offensive (Pentest, Red Team), D\u00e9fensive (SOC, Blue Team, DFIR), Cloud Security (AWS/Azure), GRC, AppSec", "R\u00e9dige rapport 1-2 pages", "Plan 30 jours suivants: ex 15j Linux avanc\u00e9 + 15j r\u00e9seau avanc\u00e9, ou TryHackMe Junior Pentest"]}, "practice": {"intro": "R\u00e9daction finale.", "commands": ["cat > ~/cyber-lab/rapports/bilan-final.md << 'EOF'\n# Bilan 30 jours\n## Commandes Linux ma\u00eetris\u00e9es:\n- ...\n## Concepts r\u00e9seau:\n- ...\n## S\u00e9curit\u00e9:\n- ...\n## Labs r\u00e9alis\u00e9s:\n- ...\n## Difficult\u00e9s:\n- ...\n## Voie qui m'attire:\n- Offensive / D\u00e9fensive / Cloud / SOC / Autre + pourquoi\n## Plan 30 prochains jours:\n- Semaine 1:\n- Semaine 2:\n- Semaine 3:\n- Semaine 4:\nEOF\ncat ~/cyber-lab/rapports/bilan-final.md"], "exercice": "Compl\u00e8te le bilan. Choisis 1 sp\u00e9cialisation et justifie en 5 lignes avec ce que tu as aim\u00e9 J1-30."}, "defi": "Pr\u00e9sente ton bilan \u00e0 voix haute en 3 minutes comme si tu pitchais \u00e0 un recruteur junior.", "notesPrompt": ["3 commandes dont tu es fier ?", "Concept r\u00e9seau le plus clair ?", "Voie choisie ?", "Plan concret prochain mois ?"], "validation": "Tu as un mini-portfolio et une direction claire."}];
+const WEEKS=[
+ {id:1,title:"Semaine 1",topic:"Linux",range:"J1-7",desc:"Linux Journey + Bandit",count:7,color:"#10b981"},
+ {id:2,title:"Semaine 2",topic:"Réseaux",range:"J8-14",desc:"Professor Messer N10-008",count:7,color:"#06b6d4"},
+ {id:3,title:"Semaine 3",topic:"Fondamentaux",range:"J15-21",desc:"THM Pre-Security",count:7,color:"#8b5cf6"},
+ {id:4,title:"Semaine 4",topic:"Hacking éthique",range:"J22-30",desc:"THM Complete Beginner",count:9,color:"#f59e0b"}
+];
+
+/* ---------- stockage ---------- */
+const store={
+ get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+ set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+let done=store.get("cyber30_done",{});
+let notes=store.get("cyber30_notes",{});
+let start=store.get("cyber30_start","");
+let icsTime=store.get("cyber30_icsTime","09:00");
+let view="today", sel=0;
+
+function saveAll(){store.set("cyber30_done",done);store.set("cyber30_notes",notes);store.set("cyber30_start",start);}
+function weekOf(id){const d=DATA.find(x=>x.id===id)||DATA[0];return WEEKS.find(w=>w.id===d.week)||WEEKS[0];}
+function doneCount(){return Object.values(done).filter(Boolean).length;}
+function pct(){return Math.round(doneCount()/30*100);}
+function streak(){let s=0;for(let i=1;i<=30;i++){if(done[i])s++;else break;}return s;}
+function todayIdx(){
+ if(sel)return sel;
+ if(start&&/^\d{4}-\d{2}-\d{2}$/.test(start)){
+  const d=Math.floor((Date.now()-new Date(start+"T00:00:00").getTime())/86400000)+1;
+  return Math.min(30,Math.max(1,d));
+ }
+ const nd=Object.keys(done).filter(k=>done[k]).map(Number);
+ return Math.min(30,(nd.length?Math.max.apply(null,nd)+1:1));
+}
+
+/* ---------- actions ---------- */
+function toggleDone(id){done[id]=!done[id];if(!done[id])delete done[id];saveAll();render();}
+function go(v){view=v;sel=0;window.scrollTo(0,0);render();}
+function pick(id){sel=id;view="today";window.scrollTo(0,0);render();}
+function autoToday(){sel=0;render();}
+function setStart(v){start=v;sel=0;saveAll();render();}
+function setIcsTime(v){icsTime=v||"09:00";store.set("cyber30_icsTime",icsTime);}
+function resetAll(){
+ if(window.confirm("Réinitialiser toute la progression, les notes et la date de début ?")){
+  done={};notes={};start="";localStorage.removeItem("cyber30_start");saveAll();render();
+ }
+}
+function copyText(btn,text){
+ const fb=document.createElement("textarea");fb.value=text;fb.style.position="fixed";fb.style.opacity="0";
+ document.body.appendChild(fb);fb.select();
+ let ok=false;
+ try{ok=document.execCommand("copy")}catch(e){}
+ document.body.removeChild(fb);
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).catch(function(){});ok=true;}
+ if(btn){btn.textContent=ok?"✓ Copié":"Copier";btn.classList.add("ok");setTimeout(function(){btn.textContent="Copier";btn.classList.remove("ok")},1600);}
+}
+function saveNote(id,v){notes[id]=v;saveAll();}
+function exportData(){
+ const blob=new Blob([JSON.stringify({app:"cyber30j",version:1,done:done,notes:notes,start:start},null,1)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="cyber30-sauvegarde.json";
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(a.href)},3000);
+}
+function importData(file){
+ const r=new FileReader();
+ r.onload=function(){
+  try{
+   const o=JSON.parse(r.result);
+   if(o&&o.app==="cyber30j"){
+    done=o.done||{};notes=o.notes||{};start=o.start||"";
+    if(!start)localStorage.removeItem("cyber30_start");
+    saveAll();render();
+   }else{window.alert("Fichier de sauvegarde non reconnu (cyber30-sauvegarde.json attendu).");}
+  }catch(e){window.alert("Fichier illisible : "+e.message);}
+ };
+ r.readAsText(file);
+}
+
+/* ---------- rappel calendrier (.ics) ---------- */
+function icsEsc(s){return String(s).replace(/\\/g,"\\\\").replace(/([,;])/g,"\\$1").replace(/\n/g,"\\n");}
+function pad(n){return String(n).padStart(2,"0");}
+function downloadICS(){
+ const base=(start&&/^\d{4}-\d{2}-\d{2}$/.test(start))?start:new Date().toISOString().slice(0,10);
+ const d0=new Date(base+"T00:00:00");
+ const hm=icsTime.split(":");
+ const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Cyber30J//Widget//FR","CALSCALE:GREGORIAN"];
+ DATA.forEach(function(d){
+  const dt=new Date(d0.getTime()+ (d.id-1)*86400000);
+  const ds=dt.getFullYear()+pad(dt.getMonth()+1)+pad(dt.getDate());
+  const s=ds+"T"+pad(hm[0])+pad(hm[1])+"00";
+  const eh=hm[1]==="55"?"00":pad(Number(hm[1])+5);
+  const e=ds+"T"+pad(hm[0])+eh+"00";
+  L.push("BEGIN:VEVENT","UID:cyber30-"+d.id+"-"+base+"@cyber30j","DTSTAMP:"+ds+"T000000",
+   "DTSTART:"+s,"DTEND:"+e,
+   "SUMMARY:"+icsEsc("Cyber30J · Jour "+d.id+" — "+d.title.replace(/^Jour\s*\d+\s*[—–-]\s*/,"")),
+   "DESCRIPTION:"+icsEsc(d.objective),
+   "BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsEsc("C'est l'heure du jour "+d.id+" !"),"TRIGGER:-PT10M","END:VALARM",
+   "END:VEVENT");
+ });
+ L.push("END:VCALENDAR");
+ const blob=new Blob([L.join("\r\n")],{type:"text/calendar;charset=utf-8"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="cyber30-rappels.ics";
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(a.href)},3000);
+}
+
+/* ---------- notifications ---------- */
+function notifSupported(){return "Notification" in window;}
+function notifState(){return notifSupported()?Notification.permission:"unsupported";}
+function askNotif(){
+ if(!notifSupported())return;
+ if(notifState()==="granted"){maybeNotify(true);render();return;}
+ Notification.requestPermission().then(function(p){if(p==="granted")maybeNotify(true);render();}).catch(function(){render();});
+}
+function maybeNotify(force){
+ if(!notifSupported()||Notification.permission!=="granted")return;
+ const t=todayIdx();
+ if(done[t])return;
+ const todayKey=new Date().toISOString().slice(0,10);
+ if(!force&&localStorage.getItem("cyber30_notif")===todayKey)return;
+ localStorage.setItem("cyber30_notif",todayKey);
+ const d=DATA[t-1];
+ try{
+  new Notification("🛡️ Cyber 30 Jours — Jour "+t,{
+   body:d.title+" — "+d.objective, tag:"cyber30", icon:"icon-192.png", badge:"icon-192.png"
+  });
+ }catch(e){}
+}
+
+/* ---------- construction DOM (textContent, jamais innerHTML) ---------- */
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;}
+function add(parent,tag,cls,text){const e=el(tag,cls,text);parent.appendChild(e);return e;}
+const SHIELD='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>';
+
+function dayCard(d){
+ const w=weekOf(d.id), isDone=!!done[d.id];
+ const card=el("section","card");
+ const head=add(card,"div","dayhead");
+ const badge=add(head,"span","badge","Jour "+d.id+" · "+w.title);
+ badge.style.background=w.color+"20";badge.style.color=w.color;badge.style.border="1px solid "+w.color+"55";
+ if(isDone)add(head,"span","ok","✓ Fait");
+ add(card,"h2",null,d.title);
+ add(card,"p","obj","🎯 "+d.objective);
+ const b=add(card,"button","done-btn"+(isDone?" on":""),isDone?"✓ Jour terminé — appuie pour annuler":"Marquer ce jour comme fait");
+ b.addEventListener("click",function(){toggleDone(d.id)});
+
+ const s1=add(card,"section","sec");
+ add(s1,"h3",null,"📚 Théorie");
+ if(d.theory.url){
+  const a=el("a","link",d.theory.label+" ↗");a.href=d.theory.url;a.target="_blank";a.rel="noopener noreferrer";s1.appendChild(a);
+ }else{add(s1,"span","mut",d.theory.label);}
+ const ul=add(s1,"ul");
+ d.theory.details.forEach(function(x){add(ul,"li",null,x);});
+
+ const s2=add(card,"section","sec");
+ add(s2,"h3",null,"💻 Pratique");
+ add(s2,"p",null,d.practice.intro);
+ const code=add(s2,"div","code");
+ const cb=add(code,"button","copy","Copier");
+ cb.addEventListener("click",function(){copyText(cb,d.practice.commands.join("\n"))});
+ add(code,"pre",null,d.practice.commands.join("\n"));
+ add(s2,"p","exo","📝 "+d.practice.exercice);
+
+ const s3=add(card,"section","sec");
+ add(s3,"h3",null,"🎯 Défi du jour");
+ add(s3,"p",null,d.defi);
+ const s4=add(card,"section","sec");
+ add(s4,"h3",null,"✅ Validation");
+ add(s4,"p",null,d.validation);
+ const s5=add(card,"section","sec");
+ add(s5,"h3",null,"📝 Notes");
+ const hints=add(s5,"div","hints");
+ d.notesPrompt.forEach(function(x){add(hints,"span","hint",x);});
+ const ta=el("textarea");ta.placeholder="Tes notes du jour…";ta.value=notes[d.id]||"";
+ ta.addEventListener("input",function(){saveNote(d.id,ta.value)});
+ s5.appendChild(ta);
+ return card;
+}
+
+function todayView(t){
+ const wrap=el("div");
+ const nav=add(wrap,"div","navrow");
+ const prev=add(nav,"button",null,"◀");prev.addEventListener("click",function(){pick(t>1?t-1:30)});
+ add(nav,"span",null,"Jour "+t+" / 30");
+ const next=add(nav,"button",null,"▶");next.addEventListener("click",function(){pick(t<30?t+1:1)});
+ wrap.appendChild(dayCard(DATA[t-1]));
+
+ const foot=add(wrap,"div","foot");
+ const l1=add(foot,"label",null,"Date de début du parcours");
+ const di=el("input");di.type="date";di.value=start;
+ di.addEventListener("change",function(){setStart(di.value)});
+ l1.appendChild(di);
+ const p1=add(foot,"p","mut");
+ p1.textContent=start
+  ?"Le jour du jour est calculé automatiquement depuis le "+start+"."
+  :"Sans date de début, le widget suit ton dernier jour validé.";
+ const ab=add(p1,"button","mini"," Mode auto");
+ ab.addEventListener("click",autoToday);
+
+ const p2=add(foot,"p","mut");
+ p2.textContent="🔔 Rappels : "+(notifState()==="granted"
+  ?"activés — une notification s'affiche à l'ouverture de l'app quand le jour n'est pas fait."
+  :(notifState()==="denied"
+   ?"bloqués — réactive-les dans les réglages du site dans Chrome."
+    :"désactivés — active-les pour être alerté à l'ouverture."));
+ const nb=add(p2,"button","mini"+(notifState()==="granted"?" on":" acc"),
+  notifState()==="granted"?"🔔 Rappels activés ✓":"🔔 Activer les rappels");
+ nb.addEventListener("click",askNotif);
+
+ const l2=add(foot,"label","inline","📅 Rappel calendrier");
+ const ti=el("input");ti.type="time";ti.value=icsTime;
+ ti.addEventListener("change",function(){setIcsTime(ti.value)});
+ l2.appendChild(ti);
+ const ib=add(l2,"button","mini acc","Télécharger le .ics (30 rappels)");
+ ib.addEventListener("click",downloadICS);
+
+ const p3=add(foot,"p","mut","Pour de vraies notifications quotidiennes programmées, Android exige un serveur de push : le plus fiable hors ligne reste le rappel calendrier .ics ci-dessus (alarme + notification système à l'heure choisie).");
+
+ const row=add(foot,"div","btnrow");
+ const eb=add(row,"button","mini","💾 Exporter la sauvegarde");eb.addEventListener("click",exportData);
+ const imp=add(row,"button","mini","📂 Importer");imp.addEventListener("click",function(){document.getElementById("importFile").click()});
+ const rb=add(row,"button","mini danger","Réinitialiser");rb.addEventListener("click",resetAll);
+ return wrap;
+}
+
+function parcoursView(){
+ const wrap=el("section","card");
+ add(wrap,"h3",null,"Parcours complet — 30 jours");
+ WEEKS.forEach(function(w){
+  const days=DATA.filter(function(d){return d.week===w.id});
+  const dn=days.filter(function(d){return done[d.id]}).length;
+  const wk=add(wrap,"div","wk");
+  const hd=add(wk,"div","wkhead");
+  const tt=add(hd,"span",null,w.title+" · "+w.topic);tt.style.color=w.color;
+  add(hd,"span","rng",w.range+" · "+dn+"/"+w.count);
+  const bar=add(wk,"div","bar sm");const f=add(bar,"div","fill");
+  f.style.width=(dn/w.count*100)+"%";f.style.background=w.color;
+  days.forEach(function(d){
+   const r=add(wk,"button","row"+(done[d.id]?" did":""));
+   const num=add(r,"span","num",String(d.id));num.style.borderColor=w.color;
+   add(r,"span","rt",d.title);
+   if(done[d.id])add(r,"span","ok","✓");
+   r.addEventListener("click",function(){pick(d.id)});
+  });
+ });
+ return wrap;
+}
+
+function semainesView(){
+ const t=todayIdx();
+ const frag=document.createDocumentFragment();
+ WEEKS.forEach(function(w){
+  const days=DATA.filter(function(d){return d.week===w.id});
+  const dn=days.filter(function(d){return done[d.id]}).length;
+  const cur=days.some(function(d){return d.id===t});
+  const c=add(frag,"section","card wkcard"+(cur?" cur":""));
+  const hd=add(c,"div","wkhead");
+  const tt=add(hd,"span",null,w.title);tt.style.color=w.color;
+  if(cur)add(hd,"span","badge","en cours").style.cssText="background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.4)";
+  add(c,"p","mut",w.range+" · "+w.topic+" — "+w.desc);
+  const bar=add(c,"div","bar");const f=add(bar,"div","fill");
+  f.style.width=(dn/w.count*100)+"%";f.style.background=w.color;
+  add(c,"p","mut",dn+"/"+w.count+" jours validés").style.marginBottom="9px";
+  const b=add(c,"button","mini","Voir les jours");
+  b.addEventListener("click",function(){go("parcours")});
+ });
+ return frag;
+}
+
+/* ---------- rendu ---------- */
+function render(){
+ const app=document.getElementById("app");
+ app.textContent="";
+ const n=doneCount(), t=todayIdx(), st=streak();
+
+ const header=el("header");
+ const brand=add(header,"div","brand");
+ const l=add(brand,"span","l");
+ l.innerHTML=SHIELD;
+ l.appendChild(document.createTextNode("Cyber 30 Jours"));
+ add(brand,"span","r",n+"/30 · "+pct()+"%"+(st>1?" · 🔥"+st:""));
+ const bar=add(header,"div","bar");add(bar,"div","fill").style.width=pct()+"%";
+ const nav=add(header,"nav");
+ [["today","Aujourd'hui"],["parcours","Parcours"],["semaines","Semaines"]].forEach(function(x){
+  const b=add(nav,"button",view===x[0]?"on":"",x[1]);
+  b.addEventListener("click",function(){go(x[0])});
+ });
+ app.appendChild(header);
+
+ const main=el("main");
+ if(view==="today")main.appendChild(todayView(t));
+ else if(view==="parcours")main.appendChild(parcoursView());
+ else main.appendChild(semainesView());
+ app.appendChild(main);
+}
+
+document.getElementById("importFile").addEventListener("change",function(e){
+ if(e.target.files&&e.target.files[0])importData(e.target.files[0]);
+ e.target.value="";
+});
+render();
+</script>
+<script>
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js").catch(function(){})})}
+if("Notification" in window&&Notification.permission==="granted"){setTimeout(maybeNotify,1500)}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")maybeNotify()});
+</script>
+</body>
+</html>
